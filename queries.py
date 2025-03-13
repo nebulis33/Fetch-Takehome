@@ -47,7 +47,7 @@ question_5 = db.sql(
     JOIN receipts on receipts.id = purchases.receipt_id
     JOIN users on users.id = receipts.user_id
     WHERE
-        created_date >= '2020-08-01'
+        users.creation_timestamp >= '2020-08-01'
     GROUP BY
         name
     ORDER BY
@@ -68,7 +68,7 @@ question_6 = db.sql(
     JOIN receipts ON receipts.id = purchases.receipt_id
     JOIN users ON users.id = receipts.user_id
     WHERE
-        created_date >= '2020-08-01'
+        users.creation_timestamp >= '2020-08-01'
     GROUP BY
         name
     ORDER BY
