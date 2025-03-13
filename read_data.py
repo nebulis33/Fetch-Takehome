@@ -88,8 +88,7 @@ def create_receipts(connection):
             purchased_item_count INT,
             status TEXT,
             total_spent FLOAT,
-            user_id TEXT,
-            reward_list TEXT
+            user_id TEXT
             );
         """
     )
@@ -112,8 +111,7 @@ def create_receipts(connection):
             purchasedItemCount AS purchase_item_count,
             rewardsReceiptStatus AS status,
             totalSpent AS total_spent,
-            userID AS user_id,
-            rewardsReceiptItemList AS reward_list
+            userID AS user_id
         FROM read_json('raw_data/receipts.json');
         COMMIT;
         """
