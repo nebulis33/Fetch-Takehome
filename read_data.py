@@ -1,4 +1,7 @@
+import json
+
 import duckdb
+from pandas import DataFrame
 
 
 def create_users(connection):
@@ -140,8 +143,42 @@ def create_purchases(connection):
         """
     )
 
+    items_data = []
+    with open("raw_data/receipts.json", "r") as f:
+        for line in f:
+            entry = json.loads(line)
+            receipt_id = entry["_id"]["$oid"]
+            if "rewardsReceiptItemList" in entry:
+                for item in entry["rewardsReceiptItemList"]:
+                    items_data.append({
+                        "receipt_id": receipt_id,
+                        "barcode": item.get("barcode"),
+                        "description": item.get("description"),
+                        "brand_id": item.get("rewardsProductPartnerId"),
+                        "item_price": item.get("itemPrice"),
+                        "dicscounted_price": item.get("discountedItemPrice"),
+                        "final_price": item.get("finalPrice"),
+                        "purchase_quantity": item.get("quantityPurchased"),
+                        "needs_fetch_review": item.get("needsFetchReview"),
+                        "prevent_target_gap_points": item.get("preventTargetGapPoints"),
+                        "user_flagged_barcode": item.get("userFlaggedBarcode"),
+                        "user_flagged_new_item": item.get("userFlaggedNewItem"),
+                        "user_flagged_price": item.get("userFlaggedPrice"),
+                        "user_flagged_purchase_quantity": item.get("userFlaggedQuantity")
+                    })
+    purchases_df = DataFrame(items_data)
+
+    connection.execute(
+        """
+            INSERT OR IGNORE INTO purchases
+            SELECT ROW_NUMBER() OVER() AS id, *
+            FROM purchases_df
+        """
+    )
+
+
 if __name__ == "__main__":
-    db = duckdb.connect(database="takehome-db.duckdb", read_only = False)
+    db = duckdb.connect(database="takehome-db.duckdb", read_only=False)
     create_users(db)
     create_brands(db)
     create_receipts(db)
