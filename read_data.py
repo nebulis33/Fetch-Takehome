@@ -141,6 +141,7 @@ def create_purchases(connection):
         """
     )
 
+    # This was a little more complex, so it was just easiest to do with Python
     items_data = []
     with open("raw_data/receipts.json", "r") as f:
         for line in f:
@@ -164,13 +165,16 @@ def create_purchases(connection):
                         "user_flagged_price": item.get("userFlaggedPrice"),
                         "user_flagged_purchase_quantity": item.get("userFlaggedQuantity")
                     })
+    # Into a Pandas dataframe because I was unable to build the table in duckDB from just a pure list or dictionary
     purchases_df = DataFrame(items_data)
 
     connection.execute(
         """
+            BEGIN TRANSACTION;
             INSERT OR IGNORE INTO purchases
             SELECT ROW_NUMBER() OVER() AS id, *
-            FROM purchases_df
+            FROM purchases_df;
+            COMMIT;
         """
     )
 
